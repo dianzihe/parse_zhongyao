@@ -7,17 +7,20 @@ require 'pg'
 comment  = ';#'
 comment = comment.to_s.empty? ? "\\z" : "\\s*(?:[#{comment}].*)?\\z"
 
-section_regexp 			= %r/TASK\s*\[.*\]/
-check_task_end_regexp  		= %r/PLAY\sRECAP.*/
-check_task_result_regexp  	= %r/.*ok=.*changed=.*unreachable.*failed=.*/
-process_ok_regexp 		= %r/^ok.*/
-process_changed_regexp 		= %r/^changed.*/
-process_skipping_regexp 	= %r/^skipping.*/
 process_fatal_regexp 		= %r/^fatal.*/
 property_regexp 		= %r/\A(.*?)(?<!\\)\z/
 
 #yaofang_regexp  	= %r/.*\t.*\t.*/
 yaofang_regexp 		= %r/.*\t.*\t.*/
+yao_item = "[\u4e00-\u9fa5\uff08-\uff09\\(\\)\\{\\}\\-\\sa-zA-Z\u3014-\u3015\u3010-\u3011\u3000\u0020\xee\x92\x8b]*"
+yao_weight = "[\\d\\.]*g"
+
+#zucheng_regexp = %r/[\u4e00-\u9fa5\uff08-\uff09\(\)\{\}\-\sa-zA-Z\u3014-\u3015\u3010-\u3011]*[\d\.]*g/
+#zucheng_regexp = Regexp.new("[\u4e00-\u9fa5\uff08-\uff09\\(\\)\\{\\}\\-\\sa-zA-Z\u3014-\u3015\u3010-\u3011]*[\\d\\.]*g")
+zucheng_regexp = Regexp.new(yao_item + yao_weight)
+#filter_zucheng_regexp = %r/([\u4e00-\u9fa5\uff08-\uff09\(\)\{\}a-zA-z\-\u3014-\u3015\u3010-\u3011]*)([\d\.]*g)/
+#filter_zucheng_regexp = Regexp.new("([\u4e00-\u9fa5\uff08-\uff09\\(\\)\\{\\}\\-\\sa-zA-Z\u3014-\u3015\u3010-\u3011]*)([\\d\\.]*g)")
+filter_zucheng_regexp = Regexp.new("(" + yao_item + ")" + "(" + yao_weight + ")")
 
 dbhost="127.0.0.1"
 dbname="nineteen_wu_development"
@@ -35,18 +38,20 @@ conn=PGconn.connect(dbhost,5432,'','',dbname,dbuser,dbpassword)
 #  puts row
 #end
 #return 1
-file=File.open("/home/dq/project/tt.txt","r:UTF-8")
+file=File.open("/home/dq/project/parse_yao/tt.txt","r:UTF-8")
 file.each { |line| 
   line.scan(/(.*)\t(.*)\t(.*)\t(.*)/) do |yaofang, chuchu, yema, zucheng| 
-    items = zucheng.scan(/[\u4e00-\u9fa5\uff08-\uff09\(\)\u3014-\u3015\u3010-\u3011]*[\d\.]*g/)
+    #items = zucheng.scan(/[\u4e00-\u9fa5\uff08-\uff09\(\)\{\}\-\sa-zA-Z\u3014-\u3015\u3010-\u3011]*[\d\.]*g/)
+    items = zucheng.scan(zucheng_regexp)
     items.each do |item|
-      item.scan(/([\u4e00-\u9fa5\uff08-\uff09\(\)\u3014-\u3015\u3010-\u3011]*)([\d\.]*g)/) do |name, weight|
-        if name.blank? then
+      #item.scan(/([\u4e00-\u9fa5\uff08-\uff09\(\)\{\}a-zA-z\-\u3014-\u3015\u3010-\u3011]*)([\d\.]*g)/) do |name, weight|
+      item.scan(filter_zucheng_regexp) do |name, weight|
+        if name.nil? || name.empty? || weight.nil? || weight.empty? then
           puts zucheng
           return
         end
-        puts "#{name}"
         puts "--"
+        puts "#{name}"
         puts "#{weight}"
       end
     end
