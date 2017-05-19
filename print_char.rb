@@ -10,6 +10,13 @@ puts "\u3010" # 段
 
 
 str_utf8 = "豆"
+str_utf8 = "："
+#"苦寒，归肺经。"
+#"生姜：辛微温。归肺脾经。发汗解表，温中止呕，温肺止咳。（胃寒呕吐）"
+str_utf8 = "，"
+str_utf8 = "。"
+#str_utf8 = "归"
+#str_utf8 = "经"
 puts str_utf8.size                                # 4
 puts str_utf8.bytesize                            # 6
 puts str_utf8.encoding                         # UTF-8

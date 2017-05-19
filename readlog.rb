@@ -50,9 +50,13 @@ file.each { |line|
           puts zucheng
           return
         end
-        puts "--"
-        puts "#{name}"
-        puts "#{weight}"
+        #puts "--"
+        if name.include?"\xee\x92\x8b" then
+          puts "[#{name}]"
+        end
+        if weight.include?"\xee\x92\x8b" then
+          puts "[#{weight}]"
+        end
       end
     end
     puts "--------------------"
